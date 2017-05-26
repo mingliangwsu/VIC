@@ -30,7 +30,7 @@
  * @brief    calculate 1d average
  *****************************************************************************/
 double
-average(double *ar,
+vic_average(double *ar,
         size_t  n)
 {
     size_t i;

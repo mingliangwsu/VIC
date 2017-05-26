@@ -29,7 +29,11 @@
 
 #include <vic_driver_shared_all.h>
 
+#ifndef VIC_CROPSYST_VERSION
 char *optstring = "g:vo";
+#else
+char *optstring = "g:c:vo";
+#endif
 
 /**********************************************************************
    cmd_proc                  Keith Cherkauer                1997
@@ -42,9 +46,16 @@ char *optstring = "g:vo";
 void
 cmd_proc(int    argc,
          char **argv,
-         char  *globalfilename)
+         char  *globalfilename
+#ifdef VIC_CROPSYST_VERSION
+         , char *globalcropfilename
+#endif
+         )
 {
     char GLOBAL_SET;
+#ifdef VIC_CROPSYST_VERSION
+    char GLOBAL_CROP_SET;
+#endif
     int  optchar;
 
     if (argc == 1) {
@@ -53,6 +64,9 @@ cmd_proc(int    argc,
     }
 
     GLOBAL_SET = false;
+#ifdef VIC_CROPSYST_VERSION
+    GLOBAL_CROP_SET = false;
+#endif
 
     while ((optchar = getopt(argc, argv, optstring)) != EOF) {
         switch ((char)optchar) {
@@ -71,6 +85,13 @@ cmd_proc(int    argc,
             strncpy(globalfilename, optarg, MAXSTRING);
             GLOBAL_SET = true;
             break;
+#ifdef VIC_CROPSYST_VERSION
+        case 'c':
+            /** Global Crop Parameters File **/
+            strncpy(globalcropfilename, optarg, MAXSTRING);
+            GLOBAL_CROP_SET = true;
+            break;
+#endif
         default:
             /** Print Usage if Invalid Command Line Arguments **/
             print_usage(argv[0]);
@@ -85,6 +106,14 @@ cmd_proc(int    argc,
         print_usage(argv[0]);
         exit(EXIT_FAILURE);
     }
+#ifdef VIC_CROPSYST_VERSION
+    if (!GLOBAL_CROP_SET) {
+        fprintf(stderr,
+                "ERROR: Must set global crop control file using the '-c' flag\n");
+        print_usage(argv[0]);
+        exit(EXIT_FAILURE);
+    }
+#endif
 }
 
 /******************************************************************************
@@ -93,8 +122,14 @@ cmd_proc(int    argc,
 void
 print_usage(char *executable)
 {
+#ifndef VIC_CROPSYST_VERSION
     fprintf(stdout,
             "Usage: %s [-v | -o | -g <global_parameter_file>]\n", executable);
+#else
+    fprintf(stdout,
+            "Usage: %s [-v | -o | -g <global_parameter_file>"
+            " -c <global_crop_parameter_file>]\n", executable);
+#endif
     fprintf(stdout, "  v: display version information\n");
     fprintf(stdout,
             "  o: display compile-time options settings"
@@ -108,6 +143,13 @@ print_usage(char *executable)
             "       parameters as well as model option flags, and the names"
             " and\n");
     fprintf(stdout, "       locations of all other files.\n");
+#ifdef VIC_CROPSYST_VERSION
+    fprintf(stdout,
+            "  c: read model parameters from <global_crop_parameter_file>.\n");
+    fprintf(stdout,
+            "       <global_crop_parameter_file> is a file that contains all"
+            " needed parameters and locations for VIC-CropSyst.\n");
+#endif
 }
 
 /******************************************************************************

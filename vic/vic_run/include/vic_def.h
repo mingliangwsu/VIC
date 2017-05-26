@@ -49,6 +49,14 @@
 #include <vic_physical_constants.h>
 #include <vic_log.h>
 
+#if (VIC_CROPSYST_VERSION>=3)
+#include "VCS_Nl_def.h"
+#endif
+
+#ifndef VIC_CROPSYST_VERSION
+#define vic_average average
+#endif
+
 /***** Model Constants *****/
 #define MAXSTRING    2048
 #define MISSING      -99999.   /**< missing value */
@@ -291,6 +299,11 @@ typedef struct {
 
     // output options
     size_t Noutstreams;  /**< Number of output stream */
+
+#ifdef VIC_CROPSYST_VERSION
+    VCS_option_struct VCS;
+#endif
+
 } option_struct;
 
 /******************************************************************************
@@ -336,6 +349,11 @@ typedef struct {
     unsigned short int time_units;  /**< Units for numeric times */
     double time_origin_num;        /**< Numeric date origin */
     char time_origin_str[MAXSTRING];  /**< string date origin */
+
+#if (VIC_CROPSYST_VERSION>=3)
+    VCS_global_param_struct VCS;
+#endif
+
 } global_param_struct;
 
 /******************************************************************************
@@ -609,6 +627,10 @@ typedef struct {
     double aspect;
     double ehoriz;
     double whoriz;
+
+#ifdef VIC_CROPSYST_VERSION
+    VCS_soil_con_struct VCS;
+#endif
 } soil_con_struct;
 
 /******************************************************************************
@@ -644,12 +666,15 @@ typedef struct {
                                       capacity (mm) */
     double *zone_depth;     /**< depth of root zone */
     double *zone_fract;     /**< fraction of roots within root zone */
+#ifdef VIC_CROPSYST_VERSION
+    VCS_veg_con_struct VCS;
+#endif
 } veg_con_struct;
 
 /******************************************************************************
  * @brief   This structure stores parameters for individual vegetation types.
  *****************************************************************************/
-typedef struct {
+typedef struct veg_lib_struct {
     double albedo[MONTHS_PER_YEAR];  /**< vegetation albedo (added for full
                                         energy) (fraction) */
     double displacement[MONTHS_PER_YEAR]; /**< vegetation displacement
@@ -694,6 +719,9 @@ typedef struct {
                               above which photosynthesis experiencing
                               saturation inhibition, i.e. too wet for optimal
                               photosynthesis; only applies to top soil layer */
+#ifdef VIC_CROPSYST_VERSION
+    VCS_veg_lib_struct VCS;
+#endif
 } veg_lib_struct;
 
 /******************************************************************************
@@ -741,6 +769,9 @@ typedef struct {
     double *vp;      /**< atmospheric vapor pressure (kPa) */
     double *vpd;     /**< atmospheric vapor pressure deficit (kPa) */
     double *wind;    /**< wind speed (m/s) */
+#ifdef VIC_CROPSYST_VERSION
+    VCS_atmos_data_struct VCS;
+#endif
 } force_data_struct;
 
 /******************************************************************************

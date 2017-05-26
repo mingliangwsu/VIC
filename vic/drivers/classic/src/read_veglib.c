@@ -159,6 +159,7 @@ read_veglib(FILE   *veglib,
                                                            attenuation factor */
             fscanf(veglib, "%lf", &temp[i].trunk_ratio); /* ratio of tree height that
                                                             is trunk */
+
             /* Carbon-cycling parameters */
             if (options.VEGLIB_PHOTO) {
                 fscanf(veglib, "%s", tmpstr); /* photosynthetic pathway */
@@ -192,7 +193,9 @@ read_veglib(FILE   *veglib,
                 temp[i].Wnpp_inhib = 1.0;
                 temp[i].NPPfactor_sat = 1.0;
             }
-
+#ifdef VIC_CROPSYST_VERSION
+            fscanf(veglib, "%s", temp[i].VCS.veg_or_rotation_name);
+#endif
             fgets(str, MAXSTRING, veglib); /* skip over end of line comments */
             i++;
         }
@@ -209,7 +212,12 @@ read_veglib(FILE   *veglib,
 
     // Assign properties of bare soil to default bare soil tile
     temp[i].NVegLibTypes = Nveg_type;
-    temp[i].veg_class = Nveg_type + 1;
+    temp[i].veg_class =
+#ifdef VIC_CROPSYST_VERSION
+        BARE_SOIL_LIB_CODE;
+#else
+        Nveg_type + 1;
+#endif
     temp[i].overstory = false;
     temp[i].rarc = param.SOIL_RARC;
     temp[i].rmin = 0.0;

@@ -362,7 +362,12 @@ polint(double  xa[],
  * @brief    Compute the nth stage of refinement of an extended trapezoidal rule.
  *****************************************************************************/
 double
-trapzd(double (*funcd)(),
+trapzd(double (*funcd)(
+#ifdef VIC_CROPSYST_VERSION
+           double, double, double, double, double, double,
+           double, double, double, double, double
+#endif
+           ),
        double   es,
        double   Wind,
        double   AirDens,

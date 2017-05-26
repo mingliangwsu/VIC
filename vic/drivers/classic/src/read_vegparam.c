@@ -28,6 +28,9 @@
  *****************************************************************************/
 
 #include <vic_driver_classic.h>
+#ifdef VIC_CROPSYST_VERSION
+#include "VCS_Nl.h"
+#endif
 
 /******************************************************************************
  * @brief    Read vegetation parameters.
@@ -61,6 +64,13 @@ read_vegparam(FILE  *vegparam,
     size_t                   length;
     size_t                   cidx;
     double                   tmp;
+#if (VIC_CROPSYST_VERSION>=3)
+    int                      expanded_vegetat_type_count;                        //each sewing type of crop rotation has one element in the veg_con array
+    veg_con_struct          *expanded_temp;
+    int                      sow_index;
+    int                      allocated_zone = 0;                                 //For mem control
+    int                      set_zone;
+#endif
 
     skip = 1;
     if (options.VEGPARAM_LAI) {
@@ -217,6 +227,9 @@ read_vegparam(FILE  *vegparam,
                     temp[i].veg_class, i, gridcel);
         }
         else {
+#ifdef VIC_CROPSYST_VERSION
+            temp[i].VCS.veg_class_code = temp[i].veg_class;
+#endif
             temp[i].veg_class = veg_class;
         }
 
@@ -451,6 +464,9 @@ read_vegparam(FILE  *vegparam,
                         temp[vegetat_type_num].veg_class, gridcel);
             }
             else {
+#ifdef VIC_CROPSYST_VERSION
+                temp[vegetat_type_num].VCS.veg_class_code = temp[vegetat_type_num].veg_class;
+#endif
                 temp[vegetat_type_num].veg_class = veg_class;
             }
 
@@ -467,6 +483,9 @@ read_vegparam(FILE  *vegparam,
     // Default bare soil tile - not specified in vegparam file
     i = vegetat_type_num;
     temp[i].veg_class = Nveg_type; // Create a veg_class ID for bare soil, which is not mentioned in the veg library
+#ifdef VIC_CROPSYST_VERSION
+    temp[i].VCS.veg_class_code = BARE_SOIL_LIB_CODE;
+#endif
     temp[i].Cv = 1.0 - Cv_sum;
     if (temp[i].Cv < 0) {
         temp[i].Cv = 0;
@@ -493,8 +512,52 @@ read_vegparam(FILE  *vegparam,
         temp[i].roughness[j] = veg_lib[temp[i].veg_class].roughness[j];
         temp[i].Wdmax[j] = veg_lib[temp[i].veg_class].Wdmax[j];
     }
-
+#ifndef VIC_CROPSYST_VERSION
     return temp;
+#else
+    //LML 150427 expand the crop rotation for each sowing type
+    expanded_vegetat_type_count = temp[0].vegetat_type_num;
+    for (j = 0; j < vegetat_type_num; j++) {
+      if (iscrop(temp[j].VCS.veg_class_code) && temp[j].Cv > 1e-8) {
+          i = VIC_get_rotation_cycle_years(temp[j].VCS.veg_class_code) - 1;
+          expanded_vegetat_type_count += i;
+      }
+    }
+    if (expanded_vegetat_type_count == temp[0].vegetat_type_num){
+      return temp;
+    } else {
+      expanded_temp = (veg_con_struct*) calloc(expanded_vegetat_type_count+1, sizeof(veg_con_struct));
+      for (j = 0; j <= expanded_vegetat_type_count; j++) {
+        expanded_temp[j].zone_depth = (double*)calloc(options.ROOT_ZONES,sizeof(float));
+        expanded_temp[j].zone_fract = (double*)calloc(options.ROOT_ZONES,sizeof(float));
+      }
+      expanded_temp[0].vegetat_type_num = expanded_vegetat_type_count;
+      k = 0;                                                                       //index for new expanded veg_con array
+      for (j = 0; j <= vegetat_type_num; j++) {
+        if (IsRotationWithMultipleCycles(temp[j].VCS.veg_class_code) &&
+            temp[j].Cv > 1e-8) {
+          i = VIC_get_rotation_cycle_years(temp[j].VCS.veg_class_code) - 1;
+        } else {
+          i = 0;
+        }
+        for (sow_index = 0; sow_index <= i; sow_index++) {
+          if (j == vegetat_type_num) set_zone = allocated_zone;
+          else set_zone = 1;
+          copy_and_split_veg_con_element(temp[j],expanded_temp[k],i+1,sow_index,set_zone);
+          k++;
+        }
+      }
+      //Clear memory for temp[]
+      if (allocated_zone) k = vegetat_type_num + 1;
+      else k = vegetat_type_num;
+      for (i = 0; i < k; i++) {
+          free(temp[i].zone_depth);
+          free(temp[i].zone_fract);
+      }
+      free(temp);
+      return expanded_temp;
+    }
+#endif
 }
 
 /* trim trailing newlines */

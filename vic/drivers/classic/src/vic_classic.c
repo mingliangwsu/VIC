@@ -90,7 +90,11 @@ main(int   argc,
     initialize_log();
 
     /** Read Model Options **/
-    cmd_proc(argc, argv, filenames.global);
+    cmd_proc(argc, argv, filenames.global
+#ifdef VIC_CROPSYST_VERSION
+             ,filenames.VCS.global_crop
+#endif
+             );
 
     // Initialize global structures
     initialize_options();
@@ -105,6 +109,12 @@ main(int   argc,
     filep.globalparam = open_file(filenames.global, "r");
     get_global_param(filep.globalparam);
     fclose(filep.globalparam);
+#ifdef VIC_CROPSYST_VERSION
+    /** Read Global Crop Control File **/
+    filep.VCS.globalcropparam = open_file(filenames.VCS.global_crop, "r");
+    get_global_crop_param(filep.VCS.globalcropparam);
+    fclose(filep.VCS.globalcropparam);
+#endif
 
     // Set Log Destination
     setup_logging(MISSING, filenames.log_path, &(filep.logfile));

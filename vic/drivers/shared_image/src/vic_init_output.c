@@ -585,6 +585,9 @@ set_global_nc_attributes(int ncid,
     char           tmpstr[MAXSTRING];
     char           userstr[MAXSTRING];
     char           hoststr[MAXSTRING];
+#ifndef MPI_MAX_LIBRARY_VERSION_STRING
+#define MPI_MAX_LIBRARY_VERSION_STRING 256
+#endif
     char           mpistr[MPI_MAX_LIBRARY_VERSION_STRING];
     int            len;
     int            status;
@@ -642,7 +645,12 @@ set_global_nc_attributes(int ncid,
                 "Macroscale Hydrologic Model");
     put_nc_attr(ncid, NC_GLOBAL, "Conventions", "CF-1.6");
     put_nc_attr(ncid, NC_GLOBAL, "netcdf_lib_version", nc_inq_libvers());
-    status = MPI_Get_library_version(mpistr, &len);
+    status =
+#ifdef VIC_CROPSYST_VERSION
+        MPI_Get_version(mpistr, &len);
+#else
+        MPI_Get_library_version(mpistr, &len);
+#endif
     if (status == MPI_SUCCESS) {
         put_nc_attr(ncid, NC_GLOBAL, "mpi_lib_version", mpistr);
     }

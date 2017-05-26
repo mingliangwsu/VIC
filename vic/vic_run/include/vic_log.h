@@ -72,8 +72,8 @@ void setup_logging(int id, char log_path[], FILE **logfile);
 
 // Debug Level
 #if LOG_LVL < 10
-#define debug(M, ...) fprintf(LOG_DEST, "[DEBUG] %s:%d: " M "\n", __FILE__, \
-                              __LINE__, ## __VA_ARGS__); fflush(LOG_DEST);
+#define debug(M, ...) { fprintf(LOG_DEST, "[DEBUG] %s:%d: " M "\n", __FILE__, \
+                              __LINE__, ## __VA_ARGS__); fflush(LOG_DEST); }
 #else
 #define debug(M, ...)
 
@@ -97,9 +97,9 @@ void setup_logging(int id, char log_path[], FILE **logfile);
 #define log_warn(M, ...) fprintf(LOG_DEST, "[WARN] errno: %s: " M "\n", \
                                  clean_errno(), ## __VA_ARGS__); errno = 0
 #else
-#define log_warn(M, ...) fprintf(LOG_DEST, "[WARN] %s:%d: errno: %s: " M "\n", \
+#define log_warn(M, ...) { fprintf(LOG_DEST, "[WARN] %s:%d: errno: %s: " M "\n", \
                                  __FILE__, __LINE__, \
-                                 clean_errno(), ## __VA_ARGS__); errno = 0
+                                 clean_errno(), ## __VA_ARGS__); errno = 0; }
 #endif
 #else
 #define log_warn(M, ...)
@@ -113,11 +113,11 @@ void setup_logging(int id, char log_path[], FILE **logfile);
                                                clean_errno(), ## __VA_ARGS__); \
     exit(EXIT_FAILURE);
 #else
-#define log_err(M, ...) print_trace(); fprintf(LOG_DEST, \
+#define log_err(M, ...) { print_trace(); fprintf(LOG_DEST, \
                                                "[ERROR] %s:%d: errno: %s: " M "\n", \
                                                __FILE__, __LINE__, \
                                                clean_errno(), ## __VA_ARGS__); \
-    exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE); }
 #endif
 
 // These depend on previously defined macros

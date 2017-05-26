@@ -585,6 +585,28 @@ read_soilparam(FILE            *soilparam,
             temp->avgJulyAirTemp = tempdbl;
         }
 
+#ifdef VIC_CROPSYST_VERSION
+        /*VIC-CropSyst need clay content (input or calculated) */
+        if (options.VCS.clay_input) {
+            for (layer = 0; layer < options.Nlayer; layer++) {
+                token = strtok (NULL, delimiters);
+                while (token != NULL && (length=strlen(token)) == 0)
+                    token = strtok (NULL, delimiters);
+                if( token == NULL ) {
+                    log_err("Can't find values for CLAY CONTENT for layer %d "
+                            "in soil file.\n", layer);
+                }
+                sscanf(token, "%lf", &tempdbl);
+                if ((tempdbl > 1. || tempdbl < 0)) {
+                    log_err("Need valid clay content as a fraction to run "
+                            "VIC-CropSyst model, %f is not acceptable.\n"
+                            , tempdbl);
+                    exit(0);
+                }
+                temp->VCS.clay[layer] = tempdbl;
+            } // end for layer
+        }  //end clay_input
+#endif
         /*******************************************
            End of soil parameters for this grid cell
         *******************************************/
@@ -609,7 +631,60 @@ read_soilparam(FILE            *soilparam,
             temp->max_moist[layer] = temp->depth[layer] *
                                      temp->porosity[layer] * MM_PER_M;
         }
-
+#ifdef VIC_CROPSYST_VERSION
+        /*if clay content is not read from input file*/
+        if (!options.VCS.clay_input) {
+            for (layer = 0; layer < options.Nlayer; layer++) {
+                tempdbl  =
+                    pow(10, (1.0 - (temp->bulk_density[layer]
+                                    / temp->soil_density[layer])
+                             - 0.332
+                             + 0.0007251 * temp->quartz[layer] * 100.0
+                            ) / 0.1276
+                        ) / 100.0;  /*150630LML for test only*/
+                temp->VCS.clay[layer] = tempdbl;
+            }
+        }
+        for (layer = 0; layer < options.Nlayer; layer++) {
+            double clay         = temp->VCS.clay[layer];
+            double quartz       = temp->quartz[layer];
+            double porocity     = temp->porosity[layer];
+            double q2           = pow(quartz * 100.0, 2.0);
+            double c2           = pow(clay * 100.0, 2.0);
+            double depth        = temp->depth[layer];
+            double b_campbell   = -(-3.14 - 0.00222 * c2
+                                    - 0.00003484 * q2 * clay * 100.0);
+            double A_value      = 100.0 * exp(-4.396 - 0.0715 * clay * 100.0
+                                              - 0.000488 * q2
+                                              - 0.00004285 * q2 * clay * 100.0);
+            double ae           = -A_value * pow(porocity, -b_campbell);
+            double WPFC         = -13.833 * log(clay * 100.0) + 10.356;
+            temp->Ksat[layer]   = 10.0 * 24.0
+                                  * exp(12.012 - 0.0755 * quartz * 100.0
+                                        + (-3.895 + 0.03671 * quartz
+                                           - 0.1103 * clay
+                                           + 0.00087546 * c2
+                                          ) / porocity);
+            if (temp->VCS.silt[layer] > 0.7) {
+                WPFC = -33;
+            } else if (WPFC > -15) {
+                WPFC = -15;
+            }
+            temp->Wcr[layer]  = depth * 1000.0 * porocity
+                                * pow((WPFC / ae), -1.0 / b_campbell);
+            temp->Wpwp[layer] = depth * 1000.0 * porocity
+                                * pow((-1500.0 / ae),-1.0 / b_campbell);
+            temp->VCS.water_pot_at_FC[layer]    = -33.0;
+            temp->VCS.silt[layer]               = 1.0 - clay - quartz;
+            temp->VCS.b_campbell[layer]         = b_campbell;
+            temp->VCS.AE[layer]                 = ae;
+            if (temp->VCS.silt[layer] > 1 || temp->VCS.silt[layer] < 0)
+                log_err("Calculated silt content (%s) is not right.\n"
+                        , temp->VCS.silt[layer]);
+            //printf("L(%d)\tsilt(%.5f)\tclay(%.5f)\tquarts(%.5f)\tb_campbell(%.5f)\tAE(%.5f)\tporosity(%.5f)\tMax_moist(%.5f)\tWcr(%.5f)\tWpwp(%.5f)\n",
+            //       layer,temp.silt[layer],temp.clay[layer],temp.quartz[layer],temp.b_campbell[layer],temp.AE[layer],temp.porosity[layer],temp.depth[layer] * temp.porosity[layer] * 1000.,temp.Wcr[layer],temp.Wpwp[layer]);
+        } // for layer
+#endif
         /**********************************************
            Validate Soil Layer Thicknesses
         **********************************************/
@@ -642,8 +717,10 @@ read_soilparam(FILE            *soilparam,
            Compute Soil Layer Critical and Wilting Point Moisture Contents
         ****************************************************************/
         for (layer = 0; layer < options.Nlayer; layer++) {
+#ifndef VIC_CROPSYST_VERSION
             temp->Wcr[layer] = Wcr_FRACT[layer] * temp->max_moist[layer];
             temp->Wpwp[layer] = Wpwp_FRACT[layer] * temp->max_moist[layer];
+#endif
             if (temp->Wpwp[layer] > temp->Wcr[layer]) {
                 log_err("Calculated wilting point moisture (%f mm) is "
                         "greater than calculated critical point moisture "

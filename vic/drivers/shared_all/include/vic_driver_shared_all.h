@@ -583,7 +583,7 @@ double all_30_day_from_dmy(dmy_struct *dmy);
 double all_leap_from_dmy(dmy_struct *dmy);
 void alloc_aggdata(stream_struct *stream);
 void alloc_out_data(size_t ngridcells, double ****out_data);
-double average(double *ar, size_t n);
+double vic_average(double *ar, size_t n);
 double calc_energy_balance_error(double, double, double, double, double);
 void calc_root_fractions(veg_con_struct *veg_con, soil_con_struct *soil_con);
 double calc_water_balance_error(double, double, double, double);
@@ -602,7 +602,11 @@ void compute_treeline(force_data_struct *, dmy_struct *, double, double *,
                       bool *);
 size_t count_force_vars(FILE *gp);
 void count_nstreams_nvars(FILE *gp, size_t *nstreams, size_t nvars[]);
-void cmd_proc(int argc, char **argv, char *globalfilename);
+void cmd_proc(int argc, char **argv, char *globalfilename
+#ifdef VIC_CROPSYST_VERSION
+              , char *globalcropfilename
+#endif
+              );
 void compress_files(char string[], short int level);
 stream_struct create_outstream(stream_struct *output_streams);
 double get_cpu_time();

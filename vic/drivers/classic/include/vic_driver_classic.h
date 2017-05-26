@@ -29,6 +29,11 @@
 
 #include <vic_driver_shared_all.h>
 
+#ifdef VIC_CROPSYST_VERSION
+#include <vcs_driver_classic.h>
+#include "VCS_Nl_def.h"
+#endif
+
 #define VIC_DRIVER "Classic"
 
 #define BINHEADERSIZE 256
@@ -50,6 +55,10 @@ typedef struct {
     FILE *veglib;       /**< vegetation parameters for all vege types */
     FILE *vegparam;     /**< fractional coverage info for grid cell */
     FILE *logfile;      /**< log file */
+
+#ifdef VIC_CROPSYST_VERSION
+    VCS_filep_struct VCS;
+#endif
 } filep_struct;
 
 /******************************************************************************
@@ -69,6 +78,10 @@ typedef struct {
     char veg[MAXSTRING];           /**< vegetation grid coverage file */
     char veglib[MAXSTRING];        /**< vegetation parameter library file */
     char log_path[MAXSTRING];      /**< Location to write log file to*/
+
+#ifdef VIC_CROPSYST_VERSION
+    VCS_filenames_struct VCS;
+#endif
 } filenames_struct;
 
 void alloc_atmos(int, force_data_struct **);

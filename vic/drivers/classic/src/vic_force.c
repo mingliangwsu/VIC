@@ -178,16 +178,16 @@ vic_force(force_data_struct *force,
             }
         }
         if (NF > 1) {
-            force[rec].air_temp[NR] = average(force[rec].air_temp, NF);
+            force[rec].air_temp[NR] = vic_average(force[rec].air_temp, NF);
             // For precipitation put total
-            force[rec].prec[NR] = average(force[rec].prec, NF) * NF;
-            force[rec].shortwave[NR] = average(force[rec].shortwave, NF);
-            force[rec].longwave[NR] = average(force[rec].longwave, NF);
-            force[rec].pressure[NR] = average(force[rec].pressure, NF);
-            force[rec].vp[NR] = average(force[rec].vp, NF);
-            force[rec].vpd[NR] = average(force[rec].vpd, NF);
-            force[rec].density[NR] = average(force[rec].density, NF);
-            force[rec].wind[NR] = average(force[rec].wind, NF);
+            force[rec].prec[NR] = vic_average(force[rec].prec, NF) * NF;
+            force[rec].shortwave[NR] = vic_average(force[rec].shortwave, NF);
+            force[rec].longwave[NR] = vic_average(force[rec].longwave, NF);
+            force[rec].pressure[NR] = vic_average(force[rec].pressure, NF);
+            force[rec].vp[NR] = vic_average(force[rec].vp, NF);
+            force[rec].vpd[NR] = vic_average(force[rec].vpd, NF);
+            force[rec].density[NR] = vic_average(force[rec].density, NF);
+            force[rec].wind[NR] = vic_average(force[rec].wind, NF);
             force[rec].snowflag[NR] = false;
             for (i = 0; i < NF; i++) {
                 if (force[rec].snowflag[i] == true) {
@@ -196,12 +196,12 @@ vic_force(force_data_struct *force,
             }
             if (options.LAKES) {
                 force[rec].channel_in[NR] =
-                    average(force[rec].channel_in, NF) * NF;
+                    vic_average(force[rec].channel_in, NF) * NF;
             }
             if (options.CARBON) {
-                force[rec].Catm[NR] = average(force[rec].Catm, NF);
-                force[rec].fdir[NR] = average(force[rec].fdir, NF);
-                force[rec].par[NR] = average(force[rec].par, NF);
+                force[rec].Catm[NR] = vic_average(force[rec].Catm, NF);
+                force[rec].fdir[NR] = vic_average(force[rec].fdir, NF);
+                force[rec].par[NR] = vic_average(force[rec].par, NF);
                 // for coszen, use value at noon
                 force[rec].coszen[NR] = compute_coszen(soil_con->lat,
                                                        soil_con->lng,
@@ -270,14 +270,14 @@ vic_force(force_data_struct *force,
                 }
             }
             if (NF > 1) {
-                veg_hist[rec][v].albedo[NR] = average(veg_hist[rec][v].albedo,
+                veg_hist[rec][v].albedo[NR] = vic_average(veg_hist[rec][v].albedo,
                                                       NF);
-                veg_hist[rec][v].displacement[NR] = average(
+                veg_hist[rec][v].displacement[NR] = vic_average(
                     veg_hist[rec][v].displacement, NF);
-                veg_hist[rec][v].fcanopy[NR] = average(
+                veg_hist[rec][v].fcanopy[NR] = vic_average(
                     veg_hist[rec][v].fcanopy, NF);
-                veg_hist[rec][v].LAI[NR] = average(veg_hist[rec][v].LAI, NF);
-                veg_hist[rec][v].roughness[NR] = average(
+                veg_hist[rec][v].LAI[NR] = vic_average(veg_hist[rec][v].LAI, NF);
+                veg_hist[rec][v].roughness[NR] = vic_average(
                     veg_hist[rec][v].roughness, NF);
             }
         }
