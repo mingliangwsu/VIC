@@ -38,7 +38,7 @@
 #define MIN_PER_DAY (MIN_PER_HOUR * HOURS_PER_DAY)  /**< hours per day */
 #define SEC_PER_MIN 60  /**< seconds per minutes */
 #define SEC_PER_HOUR (SEC_PER_MIN * MIN_PER_HOUR)  /**< seconds per hour */
-#define SEC_PER_DAY (SEC_PER_HOUR * HOURS_PER_DAY)  /**< hours per day */
+#define SEC_PER_DAY (SEC_PER_HOUR * HOURS_PER_DAY)  /**< seconds per day */
 
 /***** Unit Conversions *****/
 #define JOULES_PER_CAL 4.1868  /**< Joules per calorie */

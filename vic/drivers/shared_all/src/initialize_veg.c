@@ -25,13 +25,20 @@
  *****************************************************************************/
 
 #include <vic_driver_shared_all.h>
-
+#ifdef VCS_V5
+#include "VCS_Nl_v5.h"
+#endif
 /******************************************************************************
  * @brief    This routine initailizes the vegetation variable array.
  *****************************************************************************/
 void
 initialize_veg(veg_var_struct **veg_var,
-               size_t           Nveg)
+               size_t           Nveg
+#ifdef VCS_V5
+               , const soil_con_struct  *soil_con
+               , const veg_con_struct   *veg_con
+#endif
+               )
 {
     extern option_struct options;
 
@@ -50,7 +57,15 @@ initialize_veg(veg_var_struct **veg_var,
             // Fluxes
             veg_var[i][j].canopyevap = 0.0;
             veg_var[i][j].throughfall = 0.0;
-        }
+#ifdef VCS_V5
+            double temp = soil_con->AreaFract[j] * veg_con[i].Cv;
+            if (iscrop(veg_con[i].VCS.veg_class_code) && (temp > 1e-10)) {
+                veg_var[i][j].VCS.crop_state                 = new crop_data_struct;
+                veg_var[i][j].VCS.crop_state->CropSystHandle = 0;
+                veg_var[i][j].VCS.crop_state->Cv             = temp;
+            }
+#endif // defined(VCS_V5)
+        } // end of band
         if (options.CARBON) {
             for (j = 0; j < options.SNOW_BAND; j++) {
                 // Carbon states

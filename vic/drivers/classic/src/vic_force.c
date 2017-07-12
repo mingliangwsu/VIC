@@ -26,7 +26,9 @@
  *****************************************************************************/
 
 #include <vic_driver_classic.h>
-
+#ifdef VCS_V5
+#include "vcs_driver_shared_all.h"
+#endif
 /******************************************************************************
  * @brief    Initialize atmospheric variables for the model and snow time steps.
  *****************************************************************************/
@@ -55,6 +57,7 @@ vic_force(force_data_struct *force,
     double                     avgJulyAirTemp;
     double                    *Tfactor;
     bool                      *AboveTreeLine;
+    double                     svp_pa;
 
     /*******************************
        Check that required inputs were supplied
@@ -137,11 +140,15 @@ vic_force(force_data_struct *force,
             // vapor pressure in Pa
             force[rec].vp[i] = forcing_data[VP][uidx] * PA_PER_KPA;
             // vapor pressure deficit in Pa
-            force[rec].vpd[i] = svp(force[rec].air_temp[i]) - force[rec].vp[i];
+            svp_pa = svp(force[rec].air_temp[i]);
+            force[rec].vpd[i] = svp_pa - force[rec].vp[i];
             if (force[rec].vpd[i] < 0) {
                 force[rec].vpd[i] = 0;
-                force[rec].vp[i] = svp(force[rec].air_temp[i]);
+                force[rec].vp[i] = svp_pa;
             }
+#ifdef VCS_V5
+            force[rec].VCS.relative_humidity[i] = 100.0 * force[rec].vp[i] / svp_pa;
+#endif
             // air density in kg/m3
             force[rec].density[i] = air_density(force[rec].air_temp[i],
                                                 force[rec].pressure[i]);
@@ -186,6 +193,10 @@ vic_force(force_data_struct *force,
             force[rec].pressure[NR] = vic_average(force[rec].pressure, NF);
             force[rec].vp[NR] = vic_average(force[rec].vp, NF);
             force[rec].vpd[NR] = vic_average(force[rec].vpd, NF);
+#ifdef VCS_V5
+            force[rec].VCS.relative_humidity[NR] =
+                vic_average(force[rec].VCS.relative_humidity, NF);
+#endif
             force[rec].density[NR] = vic_average(force[rec].density, NF);
             force[rec].wind[NR] = vic_average(force[rec].wind, NF);
             force[rec].snowflag[NR] = false;
@@ -211,6 +222,10 @@ vic_force(force_data_struct *force,
             }
         }
     }
+
+#ifdef VCS_V5
+    generate_daily_forcing(force);
+#endif // defined(VCS_V5)
 
     /****************************************************
        Variables in the veg_hist structure

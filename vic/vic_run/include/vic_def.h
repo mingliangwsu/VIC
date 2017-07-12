@@ -102,7 +102,7 @@ extern size_t NR;       /**< array index for force struct that indicates
                              the model step avarage or sum */
 extern size_t NF;       /**< array index loop counter limit for force
                              struct that indicates the SNOW_STEP values */
-char          vic_run_ref_str[MAXSTRING];
+extern char vic_run_ref_str[MAXSTRING];                                          //170630LML moved defination to vic_run.c
 
 /******************************************************************************
  * @brief   Snow Density parametrizations
@@ -805,6 +805,9 @@ typedef struct {
     // Fluxes
     double bare_evap_frac;  /**< fraction of evapotranspiration coming from bare soil evap, from soil layer (mm) */
     double evap;            /**< evapotranspiration from soil layer (mm) */
+#ifdef VIC_CROPSYST_VERSION
+  VCS_layer_data_struct VCS;
+#endif
 } layer_data_struct;
 
 /******************************************************************************
@@ -844,6 +847,9 @@ typedef struct {
     double RhInter;                    /**< soil respiration from intermediate pool [gC/m2] */
     double RhSlow;                     /**< soil respiration from slow pool [gC/m2] */
     double RhTot;                      /**< total soil respiration over all pools [gC/m2] (=RhLitter2Atm+RhInter+RhSlow) */
+#ifdef VIC_CROPSYST_VERSION
+  VCS_cell_data_struct VCS;
+#endif
 } cell_data_struct;
 
 /******************************************************************************
@@ -982,6 +988,10 @@ typedef struct {
                                    (= Rdark/FRLeaf) (umol(CO2)/m2s) */
     double Rphoto;              /**< whole-canopy photorespiration
                                    (umol(CO2)/m2s) */
+
+#if (VIC_CROPSYST_VERSION>=3)
+    VCS_veg_var_struct VCS;
+#endif
 } veg_var_struct;
 
 /******************************************************************************

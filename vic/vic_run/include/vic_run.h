@@ -170,7 +170,7 @@ double func_atmos_energy_bal(double, va_list);
 double func_atmos_moist_bal(double, va_list);
 double func_canopy_energy_bal(double, va_list);
 double func_surf_energy_bal(double, va_list);
-double (*funcd)(double z, double es, double Wind, double AirDens, double ZO,
+extern double (*funcd)(double z, double es, double Wind, double AirDens, double ZO,
                 double EactAir, double F, double hsalt, double phi_r,
                 double ushear,
                 double Zrh);
@@ -310,7 +310,12 @@ double transport_with_height(double z, double es, double Wind, double AirDens,
                              double ZO, double EactAir, double F, double hsalt,
                              double phi_r, double ushear, double Zrh);
 double trapzd(
-    double (*funcd)(), double es, double Wind, double AirDens, double ZO, double EactAir, double F, double hsalt, double phi_r, double ushear, double Zrh, double a, double b,
+    double (*funcd)(
+#ifdef VIC_CROPSYST_VERSION
+                       double, double, double, double, double, double,
+                       double, double, double, double, double
+#endif
+            ), double es, double Wind, double AirDens, double ZO, double EactAir, double F, double hsalt, double phi_r, double ushear, double Zrh, double a, double b,
     int n);
 void tridia(int, double *, double *, double *, double *, double *);
 void tridiag(double *, double *, double *, double *, unsigned int);

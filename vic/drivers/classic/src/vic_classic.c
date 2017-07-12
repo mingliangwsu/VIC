@@ -26,6 +26,14 @@
 
 #include <vic_driver_classic.h>
 
+#ifdef VCS_V5
+#include "vcs_driver_classic.h"
+#include "VCS_Nl_v5.h"
+#endif
+#ifdef LIU_DEBUG
+#include <iostream>
+#endif // defined(LIU_DEBUG)
+
 // global variables
 int                 flag;
 size_t              NR; /* array index for atmos struct that indicates
@@ -145,6 +153,10 @@ main(int   argc,
     /** Read Vegetation Library File **/
     veg_lib = read_veglib(filep.veglib, &Nveg_type);
 
+#ifdef VCS_V5
+    cropcode_lib = read_cropcodelib(filep.VCS.cropcodelib,account_crop_types);
+#endif
+
     /** Initialize Parameters **/
     cellnum = -1;
 
@@ -241,13 +253,28 @@ main(int   argc,
             /******************************************
                Run Model in Grid Cell for all Time Steps
             ******************************************/
-
+#ifdef VCS_V5
+            global_today.set_YMD(dmy[0].year,dmy[0].month,dmy[0].day);
+#endif // defined(VCS_V5)
             for (rec = startrec; rec < global_param.nrecs; rec++) {
+#ifdef VCS_V5
+                global_rec = rec;
+#endif // defined(VCS_V5)
                 // Set global reference string (for debugging inside vic_run)
                 sprint_dmy(dmy_str, &(dmy[rec]));
                 sprintf(vic_run_ref_str,
                         "Gridcell cellnum: %i, timestep info: %s",
                         cellnum, dmy_str);
+#ifdef LIU_DEBUG
+                std::clog << "Gridcell: "   << cellnum
+                          << "\tY:"         << dmy[rec].year
+                          << "\tM:"         << dmy[rec].month
+                          << "\tD:"         << dmy[rec].day
+                          << "\tDOY:"       << dmy[rec].day_in_year
+                          << "\tDsecs:"     << dmy[rec].dayseconds
+                          << "\tDhrs:"      << (dmy[rec].dayseconds / SEC_PER_HOUR)
+                          << std::endl;
+#endif // defined(LIU_DEBUG)
 
                 /**************************************************
                    Update data structures for current time step

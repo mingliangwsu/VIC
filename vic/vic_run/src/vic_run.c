@@ -26,8 +26,13 @@
 ******************************************************************************/
 
 #include <vic_run.h>
+#ifdef VCS_V5
+#include "VCS_Nl_v5.h"
+#endif
 
 veg_lib_struct *vic_run_veg_lib;
+char vic_run_ref_str[MAXSTRING];                                                 //170630LML moved from vic_def.h
+
 
 /******************************************************************************
 * @brief        This subroutine controls the model core, it solves both the
@@ -150,6 +155,55 @@ vic_run(force_data_struct   *force,
         if (veg_con[iveg].Cv > 0.0) {
             Cv = veg_con[iveg].Cv;
             Nbands = options.SNOW_BAND;
+
+#ifdef VCS_V5
+            /** Initialize and start VCS crop **/
+            int veg_class_code            = veg_con[iveg].VCS.veg_class_code;    //LML 150325
+            bool iscrop_return            = iscrop(veg_class_code);
+            int current_veg_type_code(-1);                                       //LML 150325 vegetation code in veg lib file
+            int rotation_cycle_index(0);                                         //LML 150526
+            if (iscrop_return) {
+                int rotation_or_crop_veg_class_code;                             //LML 150526
+                DecomposeVegclassCode(veg_class_code
+                                      ,rotation_or_crop_veg_class_code
+                                      ,rotation_cycle_index);                    //LML 150526
+                for (band = 0; band < Nbands; band++) {                          //150929LML
+                    crop_data_struct *current_crop = veg_var[iveg][band].VCS.crop_state;
+                    if (current_crop && !current_crop->CropSystHandle) {
+                        current_crop->CropSystHandle = VIC_land_unit_create
+                            (soil_con->gridcel                                   //150415RLN
+                            ,rotation_or_crop_veg_class_code                     // actual crop or rotation code                    //150521RLN
+                            ,rotation_cycle_index                                //150415RLN
+                            ,*current_crop
+                            ,*soil_con
+                            ,options
+                            ,veg_con[iveg]
+                            ,force
+                            ,cell[iveg][band]
+                            ,snow[iveg][band]
+                            ,veg_var[iveg][band]
+                            );
+                        VIC_land_unit_start();
+                        if (dmy->day_in_year != 1) VIC_land_unit_start_year();   //160504LML
+                    } else if (current_crop){
+                        VIC_land_unit_activate(current_crop->CropSystHandle);
+                    }
+                    if (dmy->day_in_year == 1 && dmy->dayseconds == 0)
+                        VIC_land_unit_start_year();                              //160504LML
+                    if (dmy->dayseconds == 0)
+                        VIC_land_unit_start_day();                               //150325LML
+                    if (current_crop) current_crop->code = VIC_land_unit_get_current_crop_code();
+                        VIC_land_unit_deactivate();
+                } //band
+                current_veg_type_code = rotation_or_crop_veg_class_code;
+            } else {
+                current_veg_type_code = veg_class_code;
+            } //iscrop_return
+            int veg_class = get_veg_lib_index(current_veg_type_code);            //LML 141017 vegetation index in veg_lib
+                                                                                 //LML 150414 I think so. Could be rotation type NIY 150522
+                                                                                 //veg_con[iveg].veg_class; //LML 150413 get_veg_lib_index(current_veg_type_code);
+                                                                                 //LML 141017 all functions use this veg_class as veg index in veg_lib
+#endif // defined(VCS_V5)
 
             /** Lake-specific processing **/
             if (veg_con[iveg].LAKE) {
@@ -369,6 +423,28 @@ vic_run(force_data_struct   *force,
                              MM_PER_M - soil_con->Wpwp[lidx]);
                     }
                     cell[iveg][band].wetness /= options.Nlayer;
+
+#ifdef VCS_V5
+                    /** Run daily crop processes **/
+#ifdef LIU_DEBUG
+                    std::clog << "\tband:"          << band
+                              << "\tveg:"           << veg_class_code
+                              << "\tcrop?"          << (iscrop_return ? "Yes" : "No")
+                              << "\tdt:"            << global_param.dt
+                              << std::endl;
+#endif // defined(LIU_DEBUG)
+                    if (iscrop_return && (dmy->dayseconds >= (SEC_PER_DAY - global_param.dt))) {
+                        double area_fraction = Cv * soil_con->AreaFract[band];
+                        crop_data_struct *current_crop = veg_var[iveg][band].VCS.crop_state;
+                        if (current_crop) {
+                                VIC_land_unit_activate(current_crop->CropSystHandle);
+                                VIC_land_unit_process_day();
+                                VIC_land_unit_end_day(area_fraction,0,band);
+                                VIC_land_unit_deactivate();
+                        }
+                     } // iscrop && end_of_day
+#endif // defined(VCS_V5)
+
                 } /** End non-zero area band **/
             } /** End Loop Through Elevation Bands **/
         } /** end non-zero area veg tile **/

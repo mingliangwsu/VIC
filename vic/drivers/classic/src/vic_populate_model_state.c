@@ -68,7 +68,12 @@ vic_populate_model_state(all_vars_struct *all_vars,
     // Initialize all data structures to 0
     initialize_soil(cell, Nveg);
     initialize_snow(snow, Nveg);
-    initialize_veg(veg_var, Nveg);
+    initialize_veg(veg_var, Nveg
+#ifdef VCS_V5
+                   , soil_con
+                   , veg_con
+#endif
+                   );
     if (options.LAKES) {
         tmp_lake_idx = lake_con.lake_idx;
         if (tmp_lake_idx < 0) {

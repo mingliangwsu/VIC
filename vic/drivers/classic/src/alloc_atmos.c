@@ -60,6 +60,12 @@ alloc_atmos(int                 nrecs,
         check_alloc_status((*force)[i].vpd, "Memory allocation error.");
         (*force)[i].wind = calloc(NR + 1, sizeof(*(*force)[i].wind));
         check_alloc_status((*force)[i].wind, "Memory allocation error.");
+#ifdef VCS_V5
+        (*force)[i].VCS.relative_humidity = calloc(NR + 1,
+            sizeof(*(*force)[i].VCS.relative_humidity));
+        check_alloc_status((*force)[i].VCS.relative_humidity,
+            "Memory allocation error.");
+#endif
         if (options.LAKES) {
             (*force)[i].channel_in =
                 calloc(NR + 1, sizeof(*(*force)[i].channel_in));

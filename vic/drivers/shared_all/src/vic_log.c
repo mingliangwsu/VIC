@@ -33,10 +33,12 @@
 /******************************************************************************
  * @brief    Finalize logging - called after all logging is completed
  *****************************************************************************/
+FILE *LOG_DEST;                                                                  //170630LML moved from head file.
+
 void
 finalize_logging(void)
 {
-    extern FILE *LOG_DEST;
+    //170630LML extern FILE *LOG_DEST;
 
     if (!(LOG_DEST == stdout || LOG_DEST == stderr)) {
         fclose(LOG_DEST);
@@ -103,7 +105,7 @@ get_logname(const char *path,
 void
 initialize_log(void)
 {
-    extern FILE *LOG_DEST;
+    //170630LML extern FILE *LOG_DEST;
 
     LOG_DEST = stderr;
 }
@@ -116,7 +118,7 @@ setup_logging(int    id,
               char   log_path[],
               FILE **logfile)
 {
-    extern FILE *LOG_DEST;
+    //170630LML extern FILE *LOG_DEST;
     char         logfilename[MAXSTRING];
 
     if (strcmp(log_path, "MISSING") != 0) {

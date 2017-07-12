@@ -29,8 +29,10 @@
 
 #include <vic_driver_shared_all.h>
 
-#ifdef VIC_CROPSYST_VERSION
-#include <vcs_driver_classic.h>
+#ifdef VCS_V5
+//170711LML #include "VCS_Nl_v5.h"
+//170711LML #include "vcs_driver_classic.h"
+//170711LML #include "VCS_global.h"
 #include "VCS_Nl_def.h"
 #endif
 

@@ -649,7 +649,12 @@ void initialize_save_data(all_vars_struct *all_vars, force_data_struct *force,
 void initialize_snow(snow_data_struct **snow, size_t veg_num);
 void initialize_soil(cell_data_struct **cell, size_t veg_num);
 void initialize_time(void);
-void initialize_veg(veg_var_struct **veg_var, size_t nveg);
+void initialize_veg(veg_var_struct **veg_var, size_t nveg
+#ifdef VCS_V5
+                    , const soil_con_struct  *soil_con
+                    , const veg_con_struct   *veg_con
+#endif
+                    );
 double julian_day_from_dmy(dmy_struct *dmy, unsigned short int calendar);
 bool leap_year(unsigned short int year, unsigned short int calendar);
 all_vars_struct make_all_vars(size_t nveg);

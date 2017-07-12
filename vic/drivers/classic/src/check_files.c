@@ -46,4 +46,10 @@ check_files(filep_struct     *filep,
     if (options.LAKES) {
         filep->lakeparam = open_file(fnames->lakeparam, "r");
     }
+#if (VIC_CROPSYST_VERSION>=3)
+#ifdef USE_IRRIGATION_PARAM_FILE
+    filep->VCS.irrigparam = open_file(fnames->VCS.irrig,"r");
+#endif
+    filep->VCS.cropcodelib = open_file(fnames->VCS.cropcodelib,"r");
+#endif
 }

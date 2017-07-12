@@ -58,7 +58,7 @@
 #define LOG_LVL 25
 #endif
 
-FILE *LOG_DEST;
+extern FILE *LOG_DEST;                                                           //170630LML moved the difination to dource file.
 
 void finalize_logging(void);
 void get_logname(const char *path, int id, char *filename);

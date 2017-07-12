@@ -29,7 +29,7 @@
 
 #include <vic_driver_classic.h>
 #ifdef VIC_CROPSYST_VERSION
-#include "VCS_Nl.h"
+#include "VCS_Nl_v5.h"
 #endif
 
 /******************************************************************************
