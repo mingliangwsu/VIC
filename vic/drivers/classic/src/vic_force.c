@@ -28,6 +28,9 @@
 #include <vic_driver_classic.h>
 #ifdef VCS_V5
 #include "vcs_driver_shared_all.h"
+#ifdef LIU_DEBUG
+#include <iostream>
+#endif
 #endif
 /******************************************************************************
  * @brief    Initialize atmospheric variables for the model and snow time steps.
@@ -147,6 +150,12 @@ vic_force(force_data_struct *force,
                 force[rec].vp[i] = svp_pa;
             }
 #ifdef VCS_V5
+#ifdef LIU_DEBUG
+            std::clog << "DEBUG: air_temp added 10!!!\n";
+            force[rec].air_temp[i] += 10.0;
+            std::clog << "DEBUG: trippled shortwave radiation!!!\n";
+            force[rec].shortwave[i] *= 3.0;
+#endif
             force[rec].VCS.relative_humidity[i] = 100.0 * force[rec].vp[i] / svp_pa;
 #endif
             // air density in kg/m3

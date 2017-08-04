@@ -25,7 +25,9 @@
  *****************************************************************************/
 
 #include <vic_run.h>
-
+#ifdef LIU_DEBUG
+#include <iostream>
+#endif
 /******************************************************************************
  * @brief    Compute potential evaporation.
  *****************************************************************************/
@@ -45,7 +47,12 @@ compute_pot_evap(size_t  model_steps_per_day,
                  double  rarc,
                  double  fcanopy,
                  double  ra_soil,
-                 double *pot_evap)
+                 double *pot_evap
+#ifdef VCS_V5
+                 ,double *pot_evap_veg
+                 ,double *pot_evap_soil
+#endif
+                 )
 {
     extern parameters_struct param;
 
@@ -82,4 +89,18 @@ compute_pot_evap(size_t  model_steps_per_day,
                param.SOIL_RARC) / model_steps_per_day;
 
     *pot_evap = fcanopy * Epot_veg + (1 - fcanopy) * Epot_soil;
+#ifdef VCS_V5
+#ifdef LIU_DEBUG
+    /*
+    std::clog << "tair:"                    << tair
+              << "\tnet_rad:"               << net_rad
+              << "\tvpd:"                   << vpd
+              << "\tra_veg:"                << ra_veg
+              << "\tmodel_steps_per_day:"   << model_steps_per_day
+              << std::endl;
+     */
+#endif
+    *pot_evap_veg  = Epot_veg;
+    *pot_evap_soil = Epot_soil;
+#endif
 }

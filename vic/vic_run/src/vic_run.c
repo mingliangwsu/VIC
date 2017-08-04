@@ -170,6 +170,11 @@ vic_run(force_data_struct   *force,
                 for (band = 0; band < Nbands; band++) {                          //150929LML
                     crop_data_struct *current_crop = veg_var[iveg][band].VCS.crop_state;
                     if (current_crop && !current_crop->CropSystHandle) {
+#ifdef LIU_DEBUG
+                        printf("Band:%d,rotation_crop_code:%d,rotation_cycle_index:%d",
+                               band,rotation_or_crop_veg_class_code,
+                               rotation_cycle_index);
+#endif
                         current_crop->CropSystHandle = VIC_land_unit_create
                             (soil_con->gridcel                                   //150415RLN
                             ,rotation_or_crop_veg_class_code                     // actual crop or rotation code                    //150521RLN
@@ -427,11 +432,12 @@ vic_run(force_data_struct   *force,
 #ifdef VCS_V5
                     /** Run daily crop processes **/
 #ifdef LIU_DEBUG
-                    std::clog << "\tband:"          << band
+                    /*std::clog << "\tband:"          << band
                               << "\tveg:"           << veg_class_code
                               << "\tcrop?"          << (iscrop_return ? "Yes" : "No")
                               << "\tdt:"            << global_param.dt
                               << std::endl;
+                    */
 #endif // defined(LIU_DEBUG)
                     if (iscrop_return && (dmy->dayseconds >= (SEC_PER_DAY - global_param.dt))) {
                         double area_fraction = Cv * soil_con->AreaFract[band];

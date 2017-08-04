@@ -201,6 +201,10 @@ surface_fluxes(bool                 overstory,
     double            iter_aero_resist_veg[3];
     double            iter_aero_resist_used[2];
     double            iter_pot_evap;
+#ifdef VCS_V5
+    double            iter_pot_evap_veg;
+    double            iter_pot_evap_soil;
+#endif
 
     // handle bisection of understory solution
     double            store_tol_under;
@@ -804,8 +808,18 @@ surface_fluxes(bool                 overstory,
                          vic_run_veg_lib[veg_class].overstory,
                          vic_run_veg_lib[veg_class].rarc,
                          iter_soil_veg_var.fcanopy, iter_aero_resist_used[0],
-                         &iter_pot_evap);
-
+                         &iter_pot_evap
+#ifdef VCS_V5
+                         ,
+                         &iter_pot_evap_veg,
+                         &iter_pot_evap_soil
+#endif
+                         );
+#ifdef VCS_V5
+        cell->VCS.pot_evap_veg_daily    += iter_pot_evap_veg;
+        cell->VCS.pot_evap_soil_daily   += iter_pot_evap_soil;
+        cell->VCS.pot_evap_total_daily  += iter_pot_evap;
+#endif
         /**************************************
            Store sub-model time step variables
         **************************************/

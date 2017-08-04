@@ -110,7 +110,12 @@ double compute_coszen(double, double, double, unsigned short int, unsigned int);
 void compute_derived_lake_dimensions(lake_var_struct *, lake_con_struct);
 void compute_pot_evap(size_t, double, double, double, double, double, double,
                       double, double, double, double *, char, double, double,
-                      double, double *);
+                      double, double *
+#ifdef VCS_V5
+                      ,double *
+                      ,double *
+#endif
+                      );
 void compute_runoff_and_asat(soil_con_struct *, double *, double, double *,
                              double *);
 void compute_soil_resp(int, double *, double, double, double *, double *,

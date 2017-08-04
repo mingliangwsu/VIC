@@ -266,14 +266,18 @@ main(int   argc,
                         "Gridcell cellnum: %i, timestep info: %s",
                         cellnum, dmy_str);
 #ifdef LIU_DEBUG
+                ///*
                 std::clog << "Gridcell: "   << cellnum
+                          << "\trec:"       << rec
                           << "\tY:"         << dmy[rec].year
                           << "\tM:"         << dmy[rec].month
                           << "\tD:"         << dmy[rec].day
                           << "\tDOY:"       << dmy[rec].day_in_year
                           << "\tDsecs:"     << dmy[rec].dayseconds
                           << "\tDhrs:"      << (dmy[rec].dayseconds / SEC_PER_HOUR)
+                          << "\tGlobal_date:" << global_today.as_string()
                           << std::endl;
+                 //*/
 #endif // defined(LIU_DEBUG)
 
                 /**************************************************
@@ -337,6 +341,9 @@ main(int   argc,
                                 soil_con.gridcel, rec);
                     }
                 }
+                //if ((global_param.dt == 3600 && (rec % 24 == 23)) || (global_param.dt == SECONDS_PER_DAY))
+                if (((rec * (int)global_param.dt) % SECONDS_PER_DAY) == (SECONDS_PER_DAY - (int)global_param.dt))
+                    global_today.inc_day();
             } /* End Rec Loop */
 
             close_files(&filep, &streams);

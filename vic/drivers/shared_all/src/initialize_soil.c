@@ -25,6 +25,9 @@
  *****************************************************************************/
 
 #include <vic_driver_shared_all.h>
+#ifdef VCS_V5
+#include "vcs_driver_shared_all.h"
+#endif
 
 /******************************************************************************
  * @brief    This routine initializes the soil variable arrays for each new
@@ -73,6 +76,9 @@ initialize_soil(cell_data_struct **cell,
                 cell[veg][band].layer[lindex].bare_evap_frac = 0.0;
                 cell[veg][band].layer[lindex].evap = 0.0;
             }
+#ifdef VCS_V5
+            init_vcs_cell(&cell[veg][band].VCS);
+#endif
         }
     }
 }
