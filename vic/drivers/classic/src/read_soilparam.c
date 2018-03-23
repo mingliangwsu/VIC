@@ -25,6 +25,9 @@
  *****************************************************************************/
 
 #include <vic_driver_classic.h>
+#ifdef VCS_V5
+#include "VCS_Nl_v5.h"
+#endif
 
 /******************************************************************************
  * @brief    This routine reads soil parameters for each grid cell.
@@ -684,6 +687,9 @@ read_soilparam(FILE            *soilparam,
             //printf("L(%d)\tsilt(%.5f)\tclay(%.5f)\tquarts(%.5f)\tb_campbell(%.5f)\tAE(%.5f)\tporosity(%.5f)\tMax_moist(%.5f)\tWcr(%.5f)\tWpwp(%.5f)\n",
             //       layer,temp.silt[layer],temp.clay[layer],temp.quartz[layer],temp.b_campbell[layer],temp.AE[layer],temp.porosity[layer],temp.depth[layer] * temp.porosity[layer] * 1000.,temp.Wcr[layer],temp.Wpwp[layer]);
         } // for layer
+        temp->VCS.S_max = calc_Maximum_sorptivity(temp->quartz[0] * 100.0,
+                              temp->VCS.clay[0] * 100, temp->porosity[0],
+                              temp->VCS.b_campbell[0]);
 #endif
         /**********************************************
            Validate Soil Layer Thicknesses

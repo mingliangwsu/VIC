@@ -122,6 +122,14 @@ main(int   argc,
     filep.VCS.globalcropparam = open_file(filenames.VCS.global_crop, "r");
     get_global_crop_param(filep.VCS.globalcropparam);
     fclose(filep.VCS.globalcropparam);
+    /**Set irrigation library**/
+#if (!defined(IRRIGATION_MANAGEMENT_QUALITY))||(IRRIGATION_MANAGEMENT_QUALITY==1)
+    set_irrigation_efficiency_of_irrigation_library(1);
+#elif (IRRIGATION_MANAGEMENT_QUALITY==2)
+    set_irrigation_efficiency_of_irrigation_library(2);
+#elif (IRRIGATION_MANAGEMENT_QUALITY==3)
+    set_irrigation_efficiency_of_irrigation_library(3);
+#endif
 #endif
 
     // Set Log Destination
@@ -267,16 +275,17 @@ main(int   argc,
                         cellnum, dmy_str);
 #ifdef LIU_DEBUG
                 ///*
-                std::clog << "Gridcell: "   << cellnum
-                          << "\trec:"       << rec
-                          << "\tY:"         << dmy[rec].year
-                          << "\tM:"         << dmy[rec].month
-                          << "\tD:"         << dmy[rec].day
-                          << "\tDOY:"       << dmy[rec].day_in_year
-                          << "\tDsecs:"     << dmy[rec].dayseconds
-                          << "\tDhrs:"      << (dmy[rec].dayseconds / SEC_PER_HOUR)
-                          << "\tGlobal_date:" << global_today.as_string()
-                          << std::endl;
+                if (dmy[rec].dayseconds == 0)
+                    std::clog << "Gridcell: "   << cellnum
+                              << "\trec:"       << rec
+                              << "\tY:"         << dmy[rec].year
+                              << "\tM:"         << dmy[rec].month
+                              << "\tD:"         << dmy[rec].day
+                              << "\tDOY:"       << dmy[rec].day_in_year
+                              << "\tDsecs:"     << dmy[rec].dayseconds
+                              << "\tDhrs:"      << (dmy[rec].dayseconds / SEC_PER_HOUR)
+                              << "\tDate:"      << global_today.as_string()
+                              << std::endl;
                  //*/
 #endif // defined(LIU_DEBUG)
 
